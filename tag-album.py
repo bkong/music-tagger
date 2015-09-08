@@ -16,9 +16,13 @@ if len(sys.argv)==1:
     path = '.'
 else:
     path = ' '.join(sys.argv[1:])
-full_path = os.path.abspath(path)
+
+ori_cwd = os.getcwd()
+# change to directory containing audio files
+os.chdir(path)
 
 # extract info from directory name
+full_path = os.path.abspath(path)
 d_name = full_path.split(os.path.sep)[-1]
 artist, d_name = d_name.split(' - ')
 album, d_name = d_name.split(' [')
@@ -26,7 +30,7 @@ date = d_name.split(']')[0]
 year = date.split('.')[0]
 
 tag_data = []
-cue_files = glob.glob(full_path+os.path.sep+'*.cue')
+cue_files = glob.glob('*.cue')
 if len(cue_files)>0:
     if len(cue_files)>1:
         print('WARNING: Multiple cue files detected!')
@@ -58,9 +62,9 @@ if len(cue_files)>0:
                                  'date': date,
                                  'year': year,
                                  'track_artist': track_artist,
-                                 'track_num': track_num,
+                                 'track_num': '%02d' % (track_num),
                                  'track_title': track_title,
-                                 'track_fname': full_path+os.path.sep+track_fname,
+                                 'track_fname': track_fname,
                                  'track_format': audiofile.file_format.lower()})
         else:
             track_fname = audiofile.file_name
@@ -75,9 +79,9 @@ if len(cue_files)>0:
                              'date': date,
                              'year': year,
                              'track_artist': track_artist,
-                             'track_num': track_num,
+                             'track_num': '%02d' % (track_num),
                              'track_title': track_title,
-                             'track_fname': full_path+os.path.sep+track_fname,
+                             'track_fname': track_fname,
                              'track_format': audiofile.file_format.lower()})
 
 
@@ -96,7 +100,7 @@ else:
                          'track_artist': artist,
                          'track_num': track_num,
                          'track_title': track_title,
-                         'track_fname': full_path+os.path.sep+f_name,
+                         'track_fname': f_name,
                          'track_format': ext})
 
 # Write the tag data
@@ -135,3 +139,6 @@ for t in tag_data:
         flac['tracknumber'] = t['track_num']
         flac['title'] = t['track_title']
         flac.save()
+
+# change back to original working directory
+os.chdir(ori_cwd)
