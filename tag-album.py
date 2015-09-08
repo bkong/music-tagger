@@ -18,6 +18,13 @@ else:
     path = ' '.join(sys.argv[1:])
 full_path = os.path.abspath(path)
 
+# extract info from directory name
+d_name = full_path.split(os.path.sep)[-1]
+artist, d_name = d_name.split(' - ')
+album, d_name = d_name.split(' [')
+date = d_name.split(']')[0]
+year = date.split('.')[0]
+
 tag_data = []
 cue_files = glob.glob(full_path+os.path.sep+'*.cue')
 if len(cue_files)>0:
@@ -26,9 +33,13 @@ if len(cue_files)>0:
         print('         Using first cue file found:', cue_files[0])
     # process first cue file
     ts = TagSheet(open(cue_files[0]).read())
-    album = ts.tags['TITLE']
-    artist = ts.tags['PERFORMER']
-    date = ts.tags['DATE']
+    # override directory data with cue file
+    if 'TITLE' in ts.tags:
+        album = ts.tags['TITLE']
+    if 'PERFORMER' in ts.tags:
+        artist = ts.tags['PERFORMER']
+    if 'DATE' in ts.tags:
+        date = ts.tags['DATE']
     year = date[0].split('.')[0]
     for audiofile in ts.audiofiles:
         if len(audiofile.tracks)>1:
@@ -71,12 +82,6 @@ if len(cue_files)>0:
 
 
 else:
-    d_name = full_path.split(os.path.sep)[-1]
-    artist, d_name = d_name.split(' - ')
-    album, d_name = d_name.split(' [')
-    date = d_name.split(']')[0]
-    year = date.split('.')[0]
-
     for f_name in os.listdir(path):
         idx = f_name.rfind('.')
         ext = f_name[idx+1:].lower()
